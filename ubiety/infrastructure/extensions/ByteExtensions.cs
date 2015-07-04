@@ -37,6 +37,11 @@ namespace Ubiety.Infrastructure.Extensions
                 while (message[c] == 0x00)
                 {
                     c--;
+                    if (c < 0)
+                    {
+                        // here changed
+                        break;
+                    }
                 }
 
                 var r = new byte[(c + 1)];

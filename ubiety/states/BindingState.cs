@@ -62,7 +62,7 @@ namespace Ubiety.States
 					}
 					bind = iq.Payload as Bind;
 				}
-				if (bind != null) ProtocolState.Settings.Id = bind.JidTag.UserJid;
+				if (bind != null) ProtocolState.Settings.Id = bind.JidTag.JID;
 
 				ProtocolState.State = new SessionState();
 				ProtocolState.State.Execute();

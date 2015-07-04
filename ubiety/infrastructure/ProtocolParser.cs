@@ -21,7 +21,7 @@ using System;
 using System.Collections;
 using System.IO;
 using System.Xml;
-using Serilog;
+//using Serilog;
 using Ubiety.Common;
 using Ubiety.Registries;
 using Ubiety.States;
@@ -56,6 +56,7 @@ namespace Ubiety.Infrastructure
         /// </summary>
         public static void Parse(string message)
         {
+            ProtocolState.Events.RawMessage(null, new StringEventArgs(message));
             bool fullStream = false;
 
             if (ProtocolState.State is DisconnectedState)
@@ -71,7 +72,7 @@ namespace Ubiety.Infrastructure
                 ProtocolState.State = new DisconnectedState();
                 ProtocolState.State.Execute();
 
-                if (message.Length == 16)
+                if (message.Length >= 16)
                 {
                     return;
                 }
@@ -113,9 +114,9 @@ namespace Ubiety.Infrastructure
                     }
                 }
             }
-            catch (XmlException e)
+            catch (XmlException /*e*/)
             {
-                Log.Error(e, "Error in xml from server");
+                //Log.Error(e, "Error in xml from server");
                 ProtocolState.Events.Error(null, ErrorType.XmlError, ErrorSeverity.Fatal, "Error parsing XML from server.");
                 if (ProtocolState.Socket.Connected)
                 {
@@ -123,15 +124,18 @@ namespace Ubiety.Infrastructure
                     ProtocolState.State.Execute();
                 }
             }
-            catch (InvalidOperationException e)
+            catch (InvalidOperationException /*e*/)
             {
-                Log.Error(e, "Invalid operation parsing incoming message.");
+                //Log.Error(e, "Invalid operation parsing incoming message.");
             }
         }
 
         private static void AddText()
         {
-            _element?.AppendChild(ProtocolState.Document.CreateTextNode(_reader.Value));
+            if (_element != null)
+            {
+                _element.AppendChild(ProtocolState.Document.CreateTextNode(_reader.Value));
+            }
         }
 
         private static void StartTag()
@@ -161,6 +165,12 @@ namespace Ubiety.Infrastructure
             string ns = NamespaceManager.LookupNamespace(_reader.Prefix);
             var q = new XmlQualifiedName(_reader.LocalName, ns);
             XmlElement elem = TagRegistry.GetTag<Tag>(q);
+
+            // here changed
+            if (elem == null)
+            {
+                return;
+            }
 
             foreach (string attrname in ht.Keys)
             {
@@ -197,7 +207,10 @@ namespace Ubiety.Infrastructure
             }
             else
             {
-                _element?.AppendChild(elem);
+                if (_element != null)
+                {
+                    _element.AppendChild(elem);
+                }
                 _element = elem;
             }
         }
@@ -207,11 +220,12 @@ namespace Ubiety.Infrastructure
             if (_element == null)
                 return;
 
-            if ((_element.Name != _reader.Name))
+            // here changed
+            /*if ((_element.Name != _reader.Name))
             {
                 ProtocolState.Events.Error(null, ErrorType.XmlError, ErrorSeverity.Fatal, "Wrong end tag for current element.");
                 return;
-            }
+            }*/
 
             var parent = (XmlElement) _element.ParentNode;
             if (parent == null)

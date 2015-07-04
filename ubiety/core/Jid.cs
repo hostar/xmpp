@@ -34,6 +34,9 @@ namespace Ubiety.Core
 
         /// <summary>
         /// </summary>
-        public Common.Jid UserJid => InnerText;
+        public JID JID
+        {
+            get { return new JID(InnerText); }
+        }
     }
 }

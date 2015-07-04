@@ -19,7 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Xml;
-using Serilog;
+//using Serilog;
 using Ubiety.Common;
 using Ubiety.Infrastructure.Attributes;
 using Ubiety.Infrastructure.Extensions;
@@ -42,13 +42,20 @@ namespace Ubiety.Registries
         /// <param name="assembly">The assembly to search for tags</param>
         public static void AddAssembly(Assembly assembly)
         {
-            Log.Debug("Loading tags from assembly {assembly}", assembly.FullName);
+            //Log.Debug("Loading tags from assembly {assembly}", assembly.FullName);
 
             IEnumerable<XmppTagAttribute> tags = assembly.GetAttributes<XmppTagAttribute>();
             foreach (XmppTagAttribute tag in tags)
             {
-                Log.Debug("Loading tag {TagName} as class {ClassName} in the {Namespace} namespace.", tag.Name, tag.ClassType.FullName, tag.Namespace);
-                RegisteredItems.Add(new XmlQualifiedName(tag.Name, tag.Namespace).ToString(), tag.ClassType);
+                //Log.Debug("Loading tag {TagName} as class {ClassName} in the {Namespace} namespace.", tag.Name, tag.ClassType.FullName, tag.Namespace);
+                if (RegisteredItems.ContainsKey(new XmlQualifiedName(tag.Name, tag.Namespace).ToString()))
+                {
+                    RegisteredItems[new XmlQualifiedName(tag.Name, tag.Namespace).ToString()] = tag.ClassType;
+                }
+                else
+                {
+                    RegisteredItems.Add(new XmlQualifiedName(tag.Name, tag.Namespace).ToString(), tag.ClassType);
+                }
             }
         }
 
@@ -72,7 +79,8 @@ namespace Ubiety.Registries
             T tag = null;
             Type t;
 
-            Log.Debug("Finding tag {TagName}...", qname);
+            // here changed
+            //Log.Debug("Finding tag {TagName}...", qname);
 
             if (RegisteredItems.TryGetValue(qname.ToString(), out t))
             {
@@ -89,7 +97,10 @@ namespace Ubiety.Registries
             }
             else
             {
-                ProtocolState.Events.Error(null, ErrorType.UnregisteredItem, ErrorSeverity.Information, "Tag {0} not found in registry. Please load appropriate library.", qname);
+                //ProtocolState.Events.Error(null, ErrorType.UnregisteredItem, ErrorSeverity.Information, "Tag {0} not found in registry. Please load appropriate library.", qname);
+                // here changed
+                Console.WriteLine(qname);
+                //Log.Debug("error tag {TagName}", qname);
                 return null;
             }
 

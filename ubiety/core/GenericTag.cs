@@ -59,12 +59,28 @@ namespace Ubiety.Core
     [XmppTag("presence", Namespaces.Client, typeof (GenericTag))]
     [XmppTag("proceed", Namespaces.StartTls, typeof (GenericTag))]
     [XmppTag("malformed-request", Namespaces.Sasl, typeof (GenericTag))]
+
+    // dalsi typy pro me nepouzitelne
+    [XmppTag("event", Namespaces.ProtocolPubsubEvent, typeof(GenericTag))]
+    [XmppTag("items", Namespaces.ProtocolPubsubEvent, typeof(GenericTag))]
+    [XmppTag("show", Namespaces.Client, typeof(GenericTag))]
+    [XmppTag("priority", Namespaces.Client, typeof(GenericTag))]
+    [XmppTag("nick", Namespaces.ProtocolNick, typeof(GenericTag))]
+    [XmppTag("x", Namespaces.VcardUpdate, typeof(GenericTag))]
+    [XmppTag("photo", Namespaces.VcardUpdate, typeof(GenericTag))]
+    [XmppTag("delay", Namespaces.UrnDelay, typeof(GenericTag))]
+    [XmppTag("x", Namespaces.JabberDelay, typeof(GenericTag))]
+    [XmppTag("query", Namespaces.JabberIqLast, typeof(GenericTag))]
+    [XmppTag("idle", Namespaces.UrnXmppIdle, typeof(GenericTag))]
+    [XmppTag("encryption-required", Namespaces.Sasl, typeof(GenericTag))]
+    [XmppTag("connection-timeout", Namespaces.XmppStreams, typeof(GenericTag))]
     public class GenericTag : Tag
     {
         /// <summary>
         /// </summary>
         /// <param name="qname"></param>
-        public GenericTag(XmlQualifiedName qname) : base("", qname)
+        public GenericTag(XmlQualifiedName qname)
+            : base("", qname)
         {
         }
     }

@@ -37,10 +37,52 @@ namespace Ubiety.Infrastructure
         public Tag Tag { get; private set; }
     }
 
+    // here changed
+    /// <summary>
+    /// 
+    /// </summary>
+    public class StringEventArgs : EventArgs
+    {
+        /// <summary>
+        /// </summary>
+        /// <param name="str"></param>
+        public StringEventArgs(string str)
+        {
+            content = str;
+        }
+
+        /// <summary>
+        /// </summary>
+        public string content { get; private set; }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class BoolEventArgs : EventArgs
+    {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="b"></param>
+        public BoolEventArgs(bool b)
+        {
+            content = b;
+        }
+
+        /// <summary>
+        /// </summary>
+        public bool content { get; private set; }
+    }
+
     /// <summary>
     /// </summary>
     public class ErrorEventArgs : EventArgs
     {
+        private readonly ErrorSeverity _severity;
+        private readonly string _message;
+        private readonly ErrorType _type;
+
         /// <summary>
         /// </summary>
         /// <param name="message"></param>
@@ -48,24 +90,33 @@ namespace Ubiety.Infrastructure
         /// <param name="severity"></param>
         public ErrorEventArgs(string message, ErrorType type, ErrorSeverity severity)
         {
-            Message = message;
-            Type = type;
-            Severity = severity;
+            _message = message;
+            _type = type;
+            _severity = severity;
         }
 
         /// <value>
         ///     The default error message.
         /// </value>
-        public string Message { get; }
+        public string Message
+        {
+            get { return _message; }
+        }
 
         /// <value>
         ///     The type of error that is being returned.
         /// </value>
-        public ErrorType Type { get; }
+        public ErrorType Type
+        {
+            get { return _type; }
+        }
 
         /// <summary>
         /// </summary>
-        public ErrorSeverity Severity { get; }
+        public ErrorSeverity Severity
+        {
+            get { return _severity; }
+        }
     }
 
     /// <summary>
@@ -84,7 +135,10 @@ namespace Ubiety.Infrastructure
         /// <param name="args"></param>
         public void Connect(object sender, EventArgs args = default (EventArgs))
         {
-            OnConnect?.Invoke(sender, args);
+            if (OnConnect != null)
+            {
+                OnConnect(sender, args);
+            }
         }
 
         #endregion
@@ -101,7 +155,10 @@ namespace Ubiety.Infrastructure
         /// <param name="args"></param>
         public void Disconnect(object sender, EventArgs args = default (EventArgs))
         {
-            OnDisconnect?.Invoke(sender, args);
+            if (OnDisconnect != null)
+            {
+                OnDisconnect(sender, args);
+            }
         }
 
         #endregion
@@ -113,12 +170,33 @@ namespace Ubiety.Infrastructure
         public event EventHandler<TagEventArgs> OnSend;
 
         /// <summary>
+        /// 
+        /// </summary>
+        public event EventHandler<StringEventArgs> OnSendString;
+
+        /// <summary>
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
         public void Send(object sender, TagEventArgs args)
         {
-            OnSend?.Invoke(sender, args);
+            if (OnSend != null)
+            {
+                OnSend(sender, args);
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        public void SendString(object sender, StringEventArgs args)
+        {
+            if (OnSendString != null)
+            {
+                OnSendString(sender, args);
+            }
         }
 
         /// <summary>
@@ -144,7 +222,10 @@ namespace Ubiety.Infrastructure
         /// <param name="args"></param>
         public void NewTag(object sender, TagEventArgs args)
         {
-            OnNewTag?.Invoke(sender, args);
+            if (OnNewTag != null)
+            {
+                OnNewTag(sender, args);
+            }
         }
 
         /// <summary>
@@ -168,7 +249,10 @@ namespace Ubiety.Infrastructure
         /// <param name="args"></param>
         public void Error(object sender, ErrorEventArgs args)
         {
-            OnError?.Invoke(sender, args);
+            if (OnError != null)
+            {
+                OnError(sender, args);
+            }
         }
 
         /// <summary>
@@ -192,6 +276,43 @@ namespace Ubiety.Infrastructure
         public void Error(object sender, ErrorType type, ErrorSeverity severity, String message, params object[] parameters)
         {
             Error(sender, type, severity, String.Format(message, parameters));
+        }
+
+        // here changed
+        /// <summary>
+        /// 
+        /// </summary>
+        public event EventHandler<StringEventArgs> OnRawMessage;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        public void RawMessage(object sender, StringEventArgs args)
+        {
+            if (OnRawMessage != null)
+            {
+                OnRawMessage(sender, args);
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public event EventHandler<BoolEventArgs> OnAuthenticate;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        public void Authenticate(object sender, BoolEventArgs args)
+        {
+            if (OnAuthenticate != null)
+            {
+                OnAuthenticate(sender, args);
+            }
         }
     }
 }

@@ -40,6 +40,7 @@ namespace Ubiety.States
 			stream.Namespace = Namespaces.Client;
 			stream.Language = "en";
 			ProtocolState.Socket.Write("<?xml version='1.0' encoding='UTF-8'?>" + stream.StartTag());
+            //ProtocolState.Socket.Write(stream.StartTag());
 			ProtocolState.State = new ServerFeaturesState();
 		}
 	}

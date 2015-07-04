@@ -16,7 +16,7 @@
 //Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
 using System;
-using Serilog;
+//using Serilog;
 using Ubiety.Common;
 using Ubiety.Infrastructure;
 using Ubiety.Registries;
@@ -70,13 +70,12 @@ namespace Ubiety
         /// </summary>
         public Xmpp()
         {
-            ILogger log =
+            /*ILogger log =
                 new LoggerConfiguration().MinimumLevel.Debug()
                     .WriteTo.RollingFile("Logs\\log-{Date}.txt")
                     .WriteTo.Seq("http://localhost:5341")
                     .CreateLogger();
-            Log.Logger = log;
-
+            Log.Logger = log;*/
             TagRegistry.AddAssembly(typeof (Xmpp).Assembly);
         }
 
@@ -114,6 +113,17 @@ namespace Ubiety
             ProtocolState.Events.Send(this, args);
         }
 
+        // here changed
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="message"></param>
+        public void SendString(string message)
+        {
+            ProtocolState.Events.SendString(this, new StringEventArgs(message));
+        }
+
         /// <summary>
         ///     An error occurred
         /// </summary>
@@ -121,6 +131,24 @@ namespace Ubiety
         {
             add { ProtocolState.Events.OnError += value; }
             remove { ProtocolState.Events.OnError -= value; }
+        }
+
+        /// <summary>
+        ///     Received message in raw form
+        /// </summary>
+        public event EventHandler<StringEventArgs> OnRawMessage
+        {
+            add { ProtocolState.Events.OnRawMessage += value; }
+            remove { ProtocolState.Events.OnRawMessage -= value; }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public event EventHandler<BoolEventArgs> OnAuthenticate
+        {
+            add { ProtocolState.Events.OnAuthenticate += value; }
+            remove { ProtocolState.Events.OnAuthenticate -= value; }
         }
 
         #region Properties
@@ -131,12 +159,34 @@ namespace Ubiety
         /// <value>
         ///     <c>true</c> if connected; otherwise, <c>false</c>.
         /// </value>
-        public static bool Connected => ProtocolState.State is RunningState;
+        public bool Connected
+        {
+            get { return ProtocolState.State is RunningState; }
+        }
+
+        /// <summary>
+        /// Gets current state of connection
+        /// </summary>
+        public Ubiety.States.State GetCurrentState
+        {
+            get { return ProtocolState.State ; }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public bool Authenticated
+        {
+            get { return ProtocolState.Authenticated; }
+        }
 
         /// <summary>
         ///     Current settings of the application including Id and Password.
         /// </summary>
-        public static XmppSettings Settings => ProtocolState.Settings;
+        public XmppSettings Settings
+        {
+            get { return ProtocolState.Settings; }
+        }
 
         #endregion
     }

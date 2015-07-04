@@ -103,5 +103,40 @@ namespace Ubiety.Common
         /// <summary>
         /// </summary>
         public const string Roster = "jabber:iq:roster";
+
+        /// <summary>
+        /// http://jabber.org/protocol/pubsub#event
+        /// </summary>
+        public const string ProtocolPubsubEvent = "http://jabber.org/protocol/pubsub#event";
+
+        /// <summary>
+        /// http://jabber.org/protocol/nick
+        /// </summary>
+        public const string ProtocolNick = "http://jabber.org/protocol/nick";
+
+        /// <summary>
+        /// vcard-temp:x:update
+        /// </summary>
+        public const string VcardUpdate = "vcard-temp:x:update";
+
+        /// <summary>
+        /// urn:xmpp:delay
+        /// </summary>
+        public const string UrnDelay = "urn:xmpp:delay";
+
+        /// <summary>
+        /// jabber:x:delay
+        /// </summary>
+        public const string JabberDelay = "jabber:x:delay";
+
+        /// <summary>
+        /// jabber:iq:last
+        /// </summary>
+        public const string JabberIqLast = "jabber:iq:last";
+
+        /// <summary>
+        /// urn:xmpp:idle:1
+        /// </summary>
+        public const string UrnXmppIdle = "urn:xmpp:idle:1";
     }
 }

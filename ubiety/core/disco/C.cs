@@ -38,11 +38,17 @@ namespace Ubiety.Core.Disco
         ///     A URI that uniquely identifies a software application, typically a URL at the website of the project or company
         ///     that produces the software.
         /// </summary>
-        public string Node => GetAttribute("node");
+        public string Node
+        {
+            get { return GetAttribute("node"); }
+        }
 
         /// <summary>
         ///     A string that is used to verify the identity and supported features of the entity.
         /// </summary>
-        public string Ver => GetAttribute("ver");
+        public string Ver
+        {
+            get { return GetAttribute("ver"); }
+        }
     }
 }

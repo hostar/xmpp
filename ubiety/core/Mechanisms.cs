@@ -110,11 +110,17 @@ namespace Ubiety.Core
 
         /// <summary>
         /// </summary>
-        public string Text => InnerText;
+        public string Text
+        {
+            get { return InnerText; }
+        }
 
         /// <summary>
         /// </summary>
-        public MechanismType Type => GetType(Text);
+        public MechanismType Type
+        {
+            get { return GetType(Text); }
+        }
 
         /// <summary>
         /// </summary>

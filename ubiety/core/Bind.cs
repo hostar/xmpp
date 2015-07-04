@@ -35,6 +35,9 @@ namespace Ubiety.Core
 
         /// <summary>
         /// </summary>
-        public Jid JidTag => this["jid", Namespaces.Bind] as Jid;
+        public Jid JidTag
+        {
+            get { return this["jid", Namespaces.Bind] as Jid; }
+        }
     }
 }

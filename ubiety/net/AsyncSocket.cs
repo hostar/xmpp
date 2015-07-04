@@ -24,7 +24,7 @@ using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
-using Serilog;
+//using Serilog;
 using Ubiety.Common;
 using Ubiety.Infrastructure;
 using Ubiety.Infrastructure.Extensions;
@@ -39,9 +39,9 @@ namespace Ubiety.Net
     internal class AsyncSocket
     {
         // Timeout after 5 seconds by default
-/*
-        private const int Timeout = 5000;
-*/
+        /*
+                private const int Timeout = 5000;
+        */
         private const int BufferSize = 4096;
         private readonly byte[] _bufferBytes = new byte[BufferSize];
         private readonly Address _destinationAddress;
@@ -52,10 +52,14 @@ namespace Ubiety.Net
         private Socket _socket;
         private Stream _stream;
 
+        // here changed
+        private EventWaitHandle wait;
+
         #region Properties
 
         public AsyncSocket()
         {
+            wait = new EventWaitHandle(false, EventResetMode.AutoReset);
             _destinationAddress = new Address();
         }
 
@@ -64,20 +68,20 @@ namespace Ubiety.Net
         /// </summary>
         public bool Connected { get; private set; }
 
-/*
-        /// <summary>
-        /// </summary>
-        public string Hostname
-        {
-            get { return _destinationAddress.Hostname; }
-        }
-*/
+        /*
+                /// <summary>
+                /// </summary>
+                public string Hostname
+                {
+                    get { return _destinationAddress.Hostname; }
+                }
+        */
 
-/*
-        /// <summary>
-        /// </summary>
-        public bool Secure { get; set; }
-*/
+        /*
+                /// <summary>
+                /// </summary>
+                public bool Secure { get; set; }
+        */
 
         #endregion
 
@@ -100,6 +104,7 @@ namespace Ubiety.Net
             }
 
             _socket = !_destinationAddress.IPv6 ? new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp) : new Socket(AddressFamily.InterNetworkV6, SocketType.Stream, ProtocolType.Tcp);
+            _socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, true);
 
             try
             {
@@ -110,9 +115,9 @@ namespace Ubiety.Net
                 //    return;
                 //}
             }
-            catch (SocketException e)
+            catch (SocketException /*e*/)
             {
-                Log.Error(e, "Error in connecting socket.");
+                //Log.Error(e, "Error in connecting socket.");
                 ProtocolState.Events.Error(this, ErrorType.ConnectionTimeout, ErrorSeverity.Fatal, "Unable to connect to server.");
             }
         }
@@ -121,7 +126,7 @@ namespace Ubiety.Net
         {
             try
             {
-                var socket = (Socket) ar.AsyncState;
+                var socket = (Socket)ar.AsyncState;
                 socket.EndConnect(ar);
 
                 Connected = true;
@@ -149,6 +154,7 @@ namespace Ubiety.Net
             _stream.Close();
             _socket.Shutdown(SocketShutdown.Both);
             _socket.Disconnect(true);
+            _destinationAddress.srvRecordsReset();
         }
 
         /// <summary>
@@ -163,11 +169,12 @@ namespace Ubiety.Net
                 if (sslstream.IsAuthenticated)
                 {
                     _stream = sslstream;
+                    //wait.Set();
                 }
             }
-            catch (Exception e)
+            catch (Exception /*e*/)
             {
-                Log.Error(e, "Error is starting secure connection.");
+                //Log.Error(e, "Error is starting secure connection.");
                 ProtocolState.Events.Error(this, ErrorType.XmlError, ErrorSeverity.Fatal, "Cannot connect with SSL.");
             }
         }
@@ -189,13 +196,18 @@ namespace Ubiety.Net
         /// <param name="msg">Message to send</param>
         public void Write(string msg)
         {
-            Log.Debug("Outgoing message: {Message}", msg);
+            //Log.Debug("Outgoing message: {Message}", msg);
 
             if (!Connected) return;
             byte[] mesg = _utf.GetBytes(msg);
             mesg = _compressed ? _compression.Deflate(mesg) : mesg;
             _stream.Write(mesg, 0, mesg.Length);
         }
+
+        /*public void SetWait(string id)
+        {
+            wait = EventWaitHandle.OpenExisting("ubiety.proceed.wait" + id);
+        }*/
 
         private void Receive(IAsyncResult ar)
         {
@@ -207,7 +219,16 @@ namespace Ubiety.Net
 
                 string m = _utf.GetString(_compressed ? _compression.Inflate(t, t.Length) : t);
 
-                Log.Debug("Incoming Message: {Message}", m);
+                //Log.Debug("Incoming Message: {Message}", m);
+
+                // here changed
+                /*if (m.Contains("<proceed"))
+                { // ssl
+                    wait.Set();
+                    wait.WaitOne();
+                    ProtocolState.State = new ConnectedState();
+                    ProtocolState.State.Execute();
+                }*/
 
                 ProtocolParser.Parse(m);
 
@@ -218,13 +239,13 @@ namespace Ubiety.Net
 
                 _stream.BeginRead(_bufferBytes, 0, _bufferBytes.Length, Receive, null);
             }
-            catch (SocketException e)
+            catch (SocketException /*e*/)
             {
-                Log.Error(e, "Error in socket receiving data.");
+                //Log.Error(e, "Error in socket receiving data.");
             }
-            catch (InvalidOperationException e)
+            catch (InvalidOperationException /*e*/)
             {
-                Log.Error(e, "Socket committed an invalid operation trying to receive data.");
+                //Log.Error(e, "Socket committed an invalid operation trying to receive data.");
             }
         }
 

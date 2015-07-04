@@ -18,7 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using Serilog;
+//using Serilog;
 using Ubiety.Common;
 using Ubiety.Infrastructure.Attributes;
 using Ubiety.Infrastructure.Extensions;
@@ -35,7 +35,10 @@ namespace Ubiety.Registries
         /// <value>
         ///     Do we have any algorithms to use?
         /// </value>
-        public static bool AlgorithmsAvailable => RegisteredItems.Count >= 1;
+        public static bool AlgorithmsAvailable
+        {
+            get { return RegisteredItems.Count >= 1; }
+        }
 
         /// <summary>
         ///     Add a compression stream to the library.  Zlib is the default.
@@ -45,12 +48,12 @@ namespace Ubiety.Registries
         /// </param>
         public static void AddCompression(Assembly a)
         {
-            Log.Debug("Loading compression algorithms from {Assembly}", a.FullName);
+            //Log.Debug("Loading compression algorithms from {Assembly}", a.FullName);
 
             IEnumerable<CompressionAttribute> tags = a.GetAttributes<CompressionAttribute>();
             foreach (CompressionAttribute tag in tags)
             {
-                Log.Debug("Loading algorithm {Algorithm}", tag.Algorithm);
+                //Log.Debug("Loading algorithm {Algorithm}", tag.Algorithm);
                 RegisteredItems.Add(tag.Algorithm, tag.ClassType);
             }
         }
@@ -80,9 +83,9 @@ namespace Ubiety.Registries
                     return null;
                 }
             }
-            catch (Exception e)
+            catch (Exception /*e*/)
             {
-                Log.Error(e, "Unable to locate appropriate compression algorithm.");
+                //Log.Error(e, "Unable to locate appropriate compression algorithm.");
                 ProtocolState.Events.Error(null, ErrorType.UnregisteredItem, ErrorSeverity.Information, "Unable to find requested compression algorithm.");
             }
             return stream;

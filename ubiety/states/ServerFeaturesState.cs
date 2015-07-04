@@ -56,24 +56,43 @@ namespace Ubiety.States
             {
                 if (f.StartTls != null && ProtocolState.Settings.Ssl)
                 {
-                    ProtocolState.State = new StartTlsState();
-                    var tls = TagRegistry.GetTag<StartTls>("starttls", Namespaces.StartTls);
-                    ProtocolState.Socket.Write(tls);
+                    // here changed
+                    ProtocolState.State = new StartTLSState();
+                    ProtocolState.State.Execute();
+                    //var tls = TagRegistry.GetTag<StartTls>("starttls", Namespaces.StartTls);
+                    //ProtocolState.Socket.Write(tls);
                     return;
                 }
 
                 if (!ProtocolState.Authenticated)
                 {
-                    ProtocolState.Processor = SaslProcessor.CreateProcessor(f.StartSasl.SupportedTypes, ProtocolState.Settings.AuthenticationTypes);
-                    if (ProtocolState.Processor == null)
+                    // here changed
+                    if (f.StartSasl == null)
                     {
-                        ProtocolState.State = new DisconnectState();
-                        ProtocolState.State.Execute();
-                        return;
+                        ProtocolState.Processor = SaslProcessor.CreateProcessor(MechanismType.None, MechanismType.None);
                     }
-                    ProtocolState.Socket.Write(ProtocolState.Processor.Initialize(ProtocolState.Settings.Id, ProtocolState.Settings.Password));
+                    else
+                    {
+                        ProtocolState.Processor = SaslProcessor.CreateProcessor(f.StartSasl.SupportedTypes, ProtocolState.Settings.AuthenticationTypes);
+                    }
 
-                    ProtocolState.State = new SaslState();
+                    // here changed
+                    if (ProtocolState.Processor != null)
+                    {
+                        ProtocolState.Socket.Write(ProtocolState.Processor.Initialize(ProtocolState.Settings.Id, ProtocolState.Settings.Password));
+                        ProtocolState.State = new SaslState();
+                        /*ProtocolState.State = new DisconnectState();
+                        ProtocolState.State.Execute();
+                        return;*/
+                    }
+                    else
+                    {
+                        ProtocolState.State = new StartTLSState();
+                        ProtocolState.State.Execute();
+                    }
+                    //ProtocolState.Socket.Write(ProtocolState.Processor.Initialize(ProtocolState.Settings.Id, ProtocolState.Settings.Password));
+
+                    //ProtocolState.State = new SaslState();
                     return;
                 }
 
@@ -94,6 +113,13 @@ namespace Ubiety.States
                         ProtocolState.State = new CompressedState();
                         return;
                     }
+                }
+            }
+            else
+            { // here changed
+                if (data.Name == "stream:stream")
+                { // wait for stream features
+                    return;
                 }
             }
 

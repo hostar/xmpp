@@ -36,6 +36,8 @@ namespace Ubiety.States
 			{
 				ProtocolState.Socket.Write("</stream:stream>");
 			}
+            ProtocolState.State = new DisconnectedState();
+            ProtocolState.State.Execute();
 		}
 	}
 }

@@ -25,7 +25,7 @@ namespace Ubiety.Common
     /// <summary>
     ///     Manages all aspects of a users identity on an XMPP network.
     /// </summary>
-    public struct Jid : IEquatable<Jid>
+    public class JID
     {
         private string _resource;
         private string _server;
@@ -33,83 +33,25 @@ namespace Ubiety.Common
         private string _xid;
 
         /// <summary>
-        ///     Creates a new JID from a string representation
+        /// Creates a new JID from a string representation
         /// </summary>
         /// <param name="xid">String form of a JID like "user@server.com/home"</param>
-        public Jid(string xid) : this()
+        public JID(string xid)
         {
             XmppId = xid;
         }
 
         /// <summary>
-        ///     Creates a new JID from its parts
+        /// Creates a new JID from its parts
         /// </summary>
         /// <param name="user">Username to be authenticated</param>
         /// <param name="server">Server address to lookup and connect to</param>
         /// <param name="resource">Resource to bind to - may be blank</param>
-        public Jid(string user, string server, string resource = "") : this()
+        public JID(string user, string server, string resource = "")
         {
             User = user;
             Server = server;
             Resource = resource;
-        }
-
-        /// <summary>
-        /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
-        public bool Equals(Jid other)
-        {
-            return XmppId.Equals(other.XmppId);
-        }
-
-        /// <summary>
-        ///     Unique hash for an object to be used as a key in dictionaries etc...
-        /// </summary>
-        /// <returns>Hash code based on Jid parts</returns>
-        public override int GetHashCode()
-        {
-            unchecked
-            {
-                var hash = 17;
-
-                hash = hash*23 + User.GetHashCode();
-                hash = hash*23 + Resource.GetHashCode();
-                hash = hash*23 + Server.GetHashCode();
-
-                return hash;
-            }
-        }
-
-        /// <summary>
-        /// </summary>
-        /// <returns></returns>
-        public override string ToString()
-        {
-            return XmppId;
-        }
-
-        /// <summary>
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <returns></returns>
-        public override bool Equals(object obj)
-        {
-            if (obj == null)
-            {
-                return false;
-            }
-
-            if (obj is string)
-            {
-                return XmppId.Equals(obj);
-            }
-            if (!(obj is Jid))
-            {
-                return false;
-            }
-
-            return XmppId.Equals(((Jid) obj).XmppId);
         }
 
         #region {{ Properties }}
@@ -119,7 +61,7 @@ namespace Ubiety.Common
         /// </summary>
         private string XmppId
         {
-            get { return _xid ?? BuildJid(); }
+            get { return _xid ?? BuildJID(); }
             set { Parse(value); }
         }
 
@@ -131,7 +73,7 @@ namespace Ubiety.Common
             get { return Unescape(); }
             private set
             {
-                var tmp = Escape(value);
+                string tmp = Escape(value);
                 _user = Stringprep.NodePrep(tmp);
             }
         }
@@ -156,6 +98,45 @@ namespace Ubiety.Common
 
         #endregion
 
+        /// <summary>
+        /// </summary>
+        /// <returns></returns>
+        public override int GetHashCode()
+        {
+            return _xid.GetHashCode();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return XmppId;
+        }
+
+        /// <summary>
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public override bool Equals(object obj)
+        {
+            if (obj == null)
+            {
+                return false;
+            }
+            if (obj is string)
+            {
+                return XmppId.Equals(obj);
+            }
+            if (!(obj is JID))
+            {
+                return false;
+            }
+
+            return XmppId.Equals(((JID) obj).XmppId);
+        }
+
         #region {{ Operators }}
 
         /// <summary>
@@ -163,8 +144,13 @@ namespace Ubiety.Common
         /// <param name="one"></param>
         /// <param name="two"></param>
         /// <returns></returns>
-        public static bool operator ==(Jid one, Jid two)
+        public static bool operator ==(JID one, JID two)
         {
+            if (one == null)
+            {
+                return (two == null);
+            }
+
             return one.Equals(two);
         }
 
@@ -173,25 +159,60 @@ namespace Ubiety.Common
         /// <param name="one"></param>
         /// <param name="two"></param>
         /// <returns></returns>
-        public static bool operator !=(Jid one, Jid two)
+        public static bool operator ==(string one, JID two)
         {
+            if (two == null)
+            {
+                return ((object) one == null);
+            }
+
+            return two.Equals(one);
+        }
+
+        /// <summary>
+        /// </summary>
+        /// <param name="one"></param>
+        /// <param name="two"></param>
+        /// <returns></returns>
+        public static bool operator !=(JID one, JID two)
+        {
+            if (one == null)
+            {
+                return ((object) two != null);
+            }
+
             return !one.Equals(two);
         }
 
         /// <summary>
         /// </summary>
         /// <param name="one"></param>
+        /// <param name="two"></param>
         /// <returns></returns>
-        public static implicit operator Jid(string one)
+        public static bool operator !=(string one, JID two)
         {
-            return new Jid(one);
+            if (two == null)
+            {
+                return ((object) one != null);
+            }
+
+            return !two.Equals(one);
         }
 
         /// <summary>
         /// </summary>
         /// <param name="one"></param>
         /// <returns></returns>
-        public static implicit operator string(Jid one)
+        public static implicit operator JID(string one)
+        {
+            return new JID(one);
+        }
+
+        /// <summary>
+        /// </summary>
+        /// <param name="one"></param>
+        /// <returns></returns>
+        public static implicit operator string(JID one)
         {
             return one.XmppId;
         }
@@ -204,7 +225,7 @@ namespace Ubiety.Common
         ///     Builds a string version of an XID from the three parts.
         /// </summary>
         /// <returns>string version of xid</returns>
-        private string BuildJid()
+        private string BuildJID()
         {
             var sb = new StringBuilder();
             if (_user != null)
@@ -228,8 +249,8 @@ namespace Ubiety.Common
         /// </summary>
         private void Parse(string id)
         {
-            var at = id.IndexOf('@');
-            var slash = id.IndexOf('/');
+            int at = id.IndexOf('@');
+            int slash = id.IndexOf('/');
 
             if (at == -1)
             {
@@ -274,9 +295,9 @@ namespace Ubiety.Common
         private static string Escape(string user)
         {
             var u = new StringBuilder();
-            var count = 0;
+            int count = 0;
 
-            foreach (var c in user)
+            foreach (char c in user)
             {
                 switch (c)
                 {
@@ -325,7 +346,7 @@ namespace Ubiety.Common
         private string Unescape()
         {
             var re = new Regex(@"\\([2-5][0267face])");
-            var u = re.Replace(_user, delegate(Match m)
+            string u = re.Replace(_user, delegate(Match m)
             {
                 switch (m.Groups[1].Value)
                 {

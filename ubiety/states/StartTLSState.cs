@@ -16,13 +16,15 @@
 //Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
 using Ubiety.Common;
+using Ubiety.Registries;
+using Ubiety.Core;
 
 namespace Ubiety.States
 {
 	/// <summary>
 	/// 
 	/// </summary>
-	public class StartTlsState : State
+	public class StartTLSState : State
 	{
 		/// <summary>
 		/// 
@@ -33,9 +35,18 @@ namespace Ubiety.States
 		public override void Execute(Tag data = null)
 		{
 			if (data != null && data.LocalName != "proceed") return;
-			ProtocolState.Socket.StartSecure();
+
+            // here changed
+            //string starttls = "<starttls xmlns=\"urn:ietf:params:xml:ns:xmpp-tls\"/>";
+            var starttls = TagRegistry.GetTag<StartTls>("starttls", Namespaces.StartTls);
+            ProtocolState.Socket.Write(starttls);
+
+            ProtocolState.State = new ProceedState();
+            //ProtocolState.State.Execute();
+
+			/*ProtocolState.Socket.StartSecure();
 			ProtocolState.State = new ConnectedState();
-			ProtocolState.State.Execute();
+			ProtocolState.State.Execute();*/
 		}
 	}
 }

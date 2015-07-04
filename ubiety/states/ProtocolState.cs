@@ -41,6 +41,10 @@ namespace Ubiety.States
             Events.OnNewTag += EventsOnOnNewTag;
             Events.OnConnect += EventsOnOnConnect;
             Events.OnDisconnect += EventsOnOnDisconnect;
+            // here changed
+            Events.OnSend += EventsOnOnSend;
+            Events.OnSendString += Events_OnSendString;
+            Events.OnAuthenticate += Events_OnAuthenticate;
         }
 
         /// <value>
@@ -51,7 +55,7 @@ namespace Ubiety.States
         /// <value>
         ///     The socket used for connecting to the server.
         /// </value>
-        internal static AsyncSocket Socket { get; }
+        internal static AsyncSocket Socket { get; set; }
 
         /// <value>
         ///     The current SASL processor based on server communication.
@@ -61,7 +65,7 @@ namespace Ubiety.States
         /// <value>
         ///     Are we authenticated yet?
         /// </value>
-        public static bool Authenticated { get; set; }
+        public static bool Authenticated { get; set ; }
 
         /// <summary>
         ///     Is the stream currently compressed?
@@ -70,9 +74,9 @@ namespace Ubiety.States
 
         public static string Algorithm { get; set; }
 
-        public static XmppSettings Settings { get; }
+        public static XmppSettings Settings { get; private set; }
 
-        public static XmppEvents Events { get; }
+        public static XmppEvents Events { get; private set; }
 
         private static void EventsOnOnDisconnect(object sender, EventArgs eventArgs)
         {
@@ -84,14 +88,14 @@ namespace Ubiety.States
         private static void EventsOnOnConnect(object sender, EventArgs eventArgs)
         {
             // We need an XID and Password to connect to the server.
-            if (string.IsNullOrEmpty(Settings.Password))
+            if (String.IsNullOrEmpty(Settings.Password))
             {
                 Events.Error(null, ErrorType.MissingPassword, ErrorSeverity.Fatal,
                     "Must have a password in the settings to connect to a server.");
                 return;
             }
 
-            if (string.IsNullOrEmpty(Settings.Id))
+            if (String.IsNullOrEmpty(Settings.Id))
             {
                 Events.Error(null, ErrorType.MissingId, ErrorSeverity.Fatal,
                     "Must set the ID in the settings to connect to a server.");
@@ -106,6 +110,24 @@ namespace Ubiety.States
         private static void EventsOnOnNewTag(object sender, TagEventArgs args)
         {
             State.Execute(args.Tag);
+        }
+
+        // here changed
+
+        private static void EventsOnOnSend(object sender, TagEventArgs args)
+        {
+            ProtocolState.Socket.Write(args.Tag.OuterXml);
+            //ProtocolState.Socket.Write(args.content);
+        }
+
+        private static void Events_OnSendString(object sender, StringEventArgs e)
+        {
+            ProtocolState.Socket.Write(e.content);
+        }
+
+        static void Events_OnAuthenticate(object sender, BoolEventArgs e)
+        {
+            //throw new NotImplementedException();
         }
     }
 }

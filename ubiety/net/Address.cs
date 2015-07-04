@@ -15,11 +15,12 @@
 //with this library; if not, write to the Free Software Foundation, Inc., 59
 //Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using Heijden.DNS;
-using Serilog;
+//using Serilog;
 using Ubiety.States;
 using TransportType = Heijden.DNS.TransportType;
 
@@ -38,7 +39,7 @@ namespace Ubiety.Net
         public Address()
         {
             _resolver = new Resolver("8.8.8.8") {UseCache = true, TimeOut = 5, TransportType = TransportType.Tcp};
-            Log.Debug("Default DNS Servers: {DnsServers}", _resolver.DnsServer);
+            //Log.Debug("Default DNS Servers: {DnsServers}", _resolver.DnsServer);
             _resolver.OnVerbose += _resolver_OnVerbose;
         }
 
@@ -54,12 +55,12 @@ namespace Ubiety.Net
 
         private void _resolver_OnVerbose(object sender, Resolver.VerboseEventArgs e)
         {
-            Log.Debug("DNS Resolver Verbose Message: {Message}", e.Message);
+            //Log.Debug("DNS Resolver Verbose Message: {Message}", e.Message);
         }
 
         public IPAddress NextIpAddress()
         {
-            Hostname = !string.IsNullOrEmpty(ProtocolState.Settings.Hostname)
+            Hostname = !String.IsNullOrEmpty(ProtocolState.Settings.Hostname)
                 ? ProtocolState.Settings.Hostname
                 : ProtocolState.Settings.Id.Server;
 
@@ -67,18 +68,22 @@ namespace Ubiety.Net
             {
                 return IPAddress.Parse("127.0.0.1");
             }
-
-            if (_srvRecords == null && !_srvFailed)
+            // here changed
+            if (_srvRecords == null || (_srvRecords.Count == 0) /*&& _srvFailed*/)
                 _srvRecords = FindSrv();
 
-            if (_srvFailed || _srvRecords == null) return null;
-            if (_srvAttempts >= _srvRecords.Count) return null;
-            ProtocolState.Settings.Port = _srvRecords[_srvAttempts].PORT;
-            IPAddress ip = Resolve(_srvRecords[_srvAttempts].TARGET);
-            if (ip == null)
-                _srvAttempts++;
-            else
-                return ip;
+            if (!_srvFailed && _srvRecords != null)
+            {
+                if (_srvAttempts < _srvRecords.Count)
+                {
+                    ProtocolState.Settings.Port = _srvRecords[_srvAttempts].PORT;
+                    IPAddress ip = Resolve(_srvRecords[_srvAttempts].TARGET);
+                    if (ip == null)
+                        _srvAttempts++;
+                    else
+                        return ip;
+                }
+            }
             return null;
         }
 
@@ -94,6 +99,11 @@ namespace Ubiety.Net
 
             _srvFailed = true;
             return null;
+        }
+
+        public void srvRecordsReset()
+        {
+            _srvRecords.Clear();
         }
 
         private IPAddress Resolve(string hostname)

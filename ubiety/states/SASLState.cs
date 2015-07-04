@@ -37,6 +37,7 @@ namespace Ubiety.States
             {
                 case "success":
                     ProtocolState.Authenticated = true;
+                    ProtocolState.Events.Authenticate(null, new Ubiety.Infrastructure.BoolEventArgs(ProtocolState.Authenticated));
                     ProtocolState.State = new ConnectedState();
                     ProtocolState.State.Execute();
                     break;
