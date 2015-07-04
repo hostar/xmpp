@@ -3,6 +3,9 @@ Ubiety XMPP Library
 
 Ubiety is an extensible XMPP library written in C# to be easy and powerful.
 
+This fork have fixed connecting to secured servers and changed logic of sending and receiving messages.
+Logging is currently disabled. To enable it, just uncomment lines starting with "//Log".
+
 Connect to XMPP server
 ----------------------
 
