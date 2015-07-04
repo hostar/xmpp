@@ -3,10 +3,8 @@ Ubiety XMPP Library
 
 Ubiety is an extensible XMPP library written in C# to be easy and powerful.
 
-[![Build status](https://ci.appveyor.com/api/projects/status/3b7lbwih7rgmsc7a?svg=true)](https://ci.appveyor.com/project/coder2000/xmpp)
-
-Example
--------
+Connect to XMPP server
+----------------------
 
 ```c#
 using Ubiety;
@@ -18,9 +16,35 @@ public class Test {
         ubiety.Settings.ID = new JID("test@ubiety.ca");
         ubiety.Settings.Password = "test";
         
+        // add following line, if you have problems with connecting to server
+        ubiety.Settings.AuthenticationTypes = MechanismType.Default;
+        
         ubiety.Connect();
     }
 }
+```
+
+Receive XMPP message
+--------------------
+
+OnRawMessage event is triggered on every XMPP incoming message. User needs to process it manually through finite state machine.
+
+```c#
+ubiety.OnRawMessage += xmpp_OnRawMessage;
+...
+void xmpp_OnRawMessage(object sender, Ubiety.Infrastructure.StringEventArgs e)
+{
+    MessageBox.Show(e.content);
+}
+```
+
+Send XMPP message
+-----------------
+
+Messages are sent like strings.
+
+```c#
+ubiety.SendString("<message><subject>Hello</subject><body>World!</body></message>");
 ```
 
 Support
