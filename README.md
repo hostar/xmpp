@@ -53,4 +53,4 @@ ubiety.SendString("<message><subject>Hello</subject><body>World!</body></message
 Support
 -------
 
-* Forum: <http://discourse.dieterlunn.ca>
+* Forum: ~~<http://discourse.dieterlunn.ca>~~
