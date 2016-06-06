@@ -54,3 +54,4 @@ Support
 -------
 
 * Forum: ~~<http://discourse.dieterlunn.ca>~~
+* Create issue
